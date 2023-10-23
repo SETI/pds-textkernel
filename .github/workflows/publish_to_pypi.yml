@@ -9,8 +9,6 @@ on:
     types: [published]
 
 jobs:
-  test:
-
   upload_pypi:
     runs-on: ubuntu-latest
     steps:
@@ -18,7 +16,29 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - run: python3 -m pip install --upgrade build && python3 -m build
+
+      - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+
+      - name: Test
+        run: |
+          python -m unittest
+
+      - name: Build
+        run: |
+          python3 -m pip install --upgrade build && python3 -m build
+
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
