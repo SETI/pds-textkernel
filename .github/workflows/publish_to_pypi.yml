@@ -1,0 +1,25 @@
+# This workflow compiles CSPICE for many architectures and publishes a branch
+# to PyPi
+
+name: Publish to PyPI
+run-name: Publish to PyPI triggered by ${{ github.ref_type }} ${{ github.ref_name }}
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+
+  upload_pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: python3 -m pip install --upgrade build && python3 -m build
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
