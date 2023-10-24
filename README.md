@@ -6,13 +6,15 @@
 
 PDS Ring-Moon Systems Node, SETI Institute
 
+Supported versions: Python >= 3.7
+
 This is a set of routines for parsing SPICE text kernels. It returns a
 dictionary of all the parameters and their values. It implements the complete
 syntax specification as discussed in the SPICE Kernel Required Reading
 document, "kernel.req". However, it cannot be guaranteed that the parsing of
 date/time fields is identical, although dates that are unambiguous should be
 treated the same.
-#
+
 Method:
   textkernel.FromFile(filename, clear=True)
 
