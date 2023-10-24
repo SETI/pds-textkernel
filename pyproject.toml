@@ -36,10 +36,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/SETI/pds-textkernel"
-Repository = "https://github.com/SETI/pds-textkernel"
-Source = "https://github.com/SETI/pds-textkernel"
-Issues = "https://github.com/SETI/pds-textkernel/issues"
+Homepage = "https://github.com/SETI/rms-textkernel"
+Repository = "https://github.com/SETI/rms-textkernel"
+Source = "https://github.com/SETI/rms-textkernel"
+Issues = "https://github.com/SETI/rms-textkernel/issues"
 
 [tool.setuptools]
 packages = ["textkernel"]
