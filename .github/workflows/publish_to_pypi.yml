@@ -25,7 +25,7 @@ jobs:
 
       - name: Test
         run: |
-          python -m unittest
+          python -m pytest
 
       - name: Build
         run: |
