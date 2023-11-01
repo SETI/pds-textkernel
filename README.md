@@ -1,6 +1,6 @@
 | PyPI Release | Test Status | Code Coverage |
 | ------------ | ----------- | ------------- |
-| [![PyPI version](https://badge.fury.io/py/textkernel.svg)](https://badge.fury.io/py/textkernel) | [![Build status](https://img.shields.io/github/actions/workflow/status/SETI/rms-textkernel/run-tests.yml?branch=master)](https://github.com/SETI/rms-textkernel/actions) | [![Code coverage](https://img.shields.io/codecov/c/github/SETI/rms-textkernel/main?logo=codecov)](https://codecov.io/gh/SETI/rms-textkernel) |
+| [![PyPI version](https://badge.fury.io/py/rms-textkernel.svg)](https://badge.fury.io/py/rms-textkernel) | [![Build status](https://img.shields.io/github/actions/workflow/status/SETI/rms-textkernel/run-tests.yml?branch=master)](https://github.com/SETI/rms-textkernel/actions) | [![Code coverage](https://img.shields.io/codecov/c/github/SETI/rms-textkernel/main?logo=codecov)](https://codecov.io/gh/SETI/rms-textkernel) |
 
 # rms-textkernel
 
