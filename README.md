@@ -4,7 +4,7 @@
 
 # rms-textkernel
 
-Supported versions: Python >= 3.7
+Supported versions: Python >= 3.8
 
 ## PDS Ring-Moon Systems Node, SETI Institute
 ## TextKernel Library
