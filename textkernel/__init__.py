@@ -61,6 +61,12 @@ from textkernel._NAME_GRAMMAR          import _NAME_GRAMMAR
 from textkernel._PREDEFINED_BODY_INFO  import _PREDEFINED_BODY_INFO
 from textkernel._PREDEFINED_FRAME_INFO import _PREDEFINED_FRAME_INFO
 
+try:
+    from ._version import __version__
+except ImportError as err:
+    __version__ = 'Version unspecified'
+
+
 # Regular expressions to match \\begindata and \\begintext sections. These must be alone
 # on a line. NOTE: There's really only one backslash in front of the "b", but two are
 # needed in the Python source code because a single backslash indicates an escape.
