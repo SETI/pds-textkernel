@@ -24,7 +24,7 @@ This software is maintained by the [Ring-Moon Systems Node](https://pds-rings.se
 ## Code of Conduct
 
 This project and everyone participating in it are governed by the
-[Code of Conduct](blob/main/CODE_OF_CONDUCT.md).
+[Code of Conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior
 to <matt@seti.org>.
 
