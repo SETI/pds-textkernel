@@ -39,6 +39,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/SETI/rms-textkernel"
+Documentation = "https://rms-textkernel.readthedocs.io/en/latest"
 Repository = "https://github.com/SETI/rms-textkernel"
 Source = "https://github.com/SETI/rms-textkernel"
 Issues = "https://github.com/SETI/rms-textkernel/issues"
