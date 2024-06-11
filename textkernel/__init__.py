@@ -63,7 +63,7 @@ from textkernel._PREDEFINED_FRAME_INFO import _PREDEFINED_FRAME_INFO
 
 try:
     from ._version import __version__
-except ImportError as err:
+except ImportError:  # pragma: nocover
     __version__ = 'Version unspecified'
 
 
@@ -75,63 +75,68 @@ _BEGINTEXT = re.compile(r'\n[ \t]*\\begintext[ \t]*\r?\n', re.S)
 
 
 def from_text(text, tkdict=None, *, commented=True, contin=''):
-    """This routine parses a string as the content of a text kernel, returning a
-    dictionary of the values found.
+    """
+    Parse a string as the contents of a text kernel and return a dict of values found.
 
-    Input:
-        text        the contents os a SPICE text kernel. It can be represented as a single
-                    string with embedded newlines or as a list of strings.
-        tkdict      An optional starting dictionary. If provided, the new content is
-                    merged into the one provided; otherwise, a new dictionary is returned.
-        commented   True if the kernel text contains comments delimited by " \\begintext"
-                    and "\\begindata".
-        contin      optional sequence of characters indicating that a string is
-                    "continued", meaning that its value should be concatenated with the
-                    next string in the list. See the rules for continued strings here:
-                      https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
-                    If a text kernel uses multiple different continuation sequences (which
-                    is exceedingly unlikely), you can only specify one sequence here; use
-                    continued_value() to interpret the values of other continued strings.
-                    The default value is "+" for all metakernels.
+    Args:
+        text (str): The contents os a SPICE text kernel. It can be represented as a single
+            string with embedded newlines or as a list of strings.
+        tkdict (dict, optional): An optional starting dictionary. If provided, the new
+            content is merged into the one provided; otherwise, a new dictionary is
+            returned.
+        commented (bool, optional): True if the kernel text contains comments delimited
+            by " \\begintext" and "\\begindata".
+        contin (str, optional): Optional sequence of characters indicating that a string
+            is "continued", meaning that its value should be concatenated with the
+            next string in the list. See the rules for continued strings here:
+                https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+            If a text kernel uses multiple different continuation sequences (which
+            is exceedingly unlikely), you can only specify one sequence here; use
+            continued_value() to interpret the values of other continued strings.
+            The default value is "+" for all metakernels.
 
-    Return:         A dictionary containing all the parameters in the given string.
+    Returns:
+        dict: A dictionary containing all the parameters in the given string.
 
-    The returned dictionary is keyed by all the parameter names (on the left side of an
-    equal sign) in the text kernel, and each associated dictionary value is that found on
-    the right side. Values are Python ints, floats, strings, datetime objects, or lists of
-    one or more of these.
+        The returned dictionary is keyed by all the parameter names (on the left
+        side of an equal sign) in the text kernel, and each associated
+        dictionary value is that found on the right side. Values are Python
+        ints, floats, strings, datetime objects, or lists of one or more of
+        these.
 
-    For convenience, the returned dictionary adds additional, "hierarchical" keys that
-    provide alternative access to the same values. Hierarchical keys are substrings from
-    the original parameter name, which return a sub-dictionary keyed by part or all of the
-    remainder of that parameter name.
+        For convenience, the returned dictionary adds additional, "hierarchical"
+        keys that provide alternative access to the same values. Hierarchical
+        keys are substrings from the original parameter name, which return a
+        sub-dictionary keyed by part or all of the remainder of that parameter
+        name.
 
-    - Parameter names with a slash are split apart as if they represented components of a
-      file directory tree, so these are equivalent:
-            tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
+        - Parameter names with a slash are split apart as if they represented
+          components of a file directory tree, so these are equivalent:
+                tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
 
-    - When a body or frame ID is embedded inside a parameter name, it is extracted,
-      converted to integer, and used as a piece of the hierarchy, making these equivalent:
-            tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
-            tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
-      Leading and trailing underscores before and after the embedded numeric ID are
-      stripped from the hierarchical keys, as you can see in the examples above.
+        - When a body or frame ID is embedded inside a parameter name, it is extracted,
+          converted to integer, and used as a piece of the hierarchy, making these
+          equivalent:
+                tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
+                tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+          Leading and trailing underscores before and after the embedded numeric ID are
+          stripped from the hierarchical keys, as you can see in the examples above.
 
-    - When the name associated with a body or frame ID is known, that name can be used in
-      the place of the integer ID:
-            tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
-            tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
-            tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
+        - When the name associated with a body or frame ID is known, that name can be
+          used in the place of the integer ID:
+                tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
+                tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
+                tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
 
-    - If a frame is associated with a particular central body, the body's ID can also be
-      used in place of the frame's ID:
-            tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
-
-    Note that the "BODY" and "FRAME" dictionaries also have an additional entry keyed by
-    "ID", which returns the associated integer ID:
-            tkdict["FRAME"][623]["ID"] = 623
-            tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
-    This ensures that you can look up a body or frame by name and readily obtain its ID.
+        - If a frame is associated with a particular central body, the body's ID can also
+          be used in place of the frame's ID:
+                tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
+          Note that the "BODY" and "FRAME" dictionaries also have an additional entry
+          keyed by "ID", which returns the associated integer ID:
+                tkdict["FRAME"][623]["ID"] = 623
+                tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+          This ensures that you can look up a body or frame by name and readily obtain its
+          ID.
     """
 
     tkdict_is_new = (tkdict is None)
@@ -155,10 +160,10 @@ def from_text(text, tkdict=None, *, commented=True, contin=''):
     parsed = _DATA_GRAMMAR.parse_string(text).as_list()
 
     # Track new sub-dictionaries and new name/ID pairs
-    indices = []        # a list of tuples (before-text, idcode or name)
+    indices = []         # a list of tuples (before-text, idcode or name)
 
-    new_body_names = [] # a list of new tuples NAIF_BODY_NAME values
-    new_body_codes = [] # a list of new tuples NAIF_BODY_CODE values
+    new_body_names = []  # a list of new tuples NAIF_BODY_NAME values
+    new_body_codes = []  # a list of new tuples NAIF_BODY_CODE values
 
     # Insert each value into the dictionary
     for (name, op, value) in parsed:
@@ -249,7 +254,7 @@ def from_text(text, tkdict=None, *, commented=True, contin=''):
         if bf_key == 'BODY':
             frame_name = prefix_subdict.get('FRAME', '')
             if frame_name.startswith('IAU_'):
-                    allkeys.append(frame_name[4:])
+                allkeys.append(frame_name[4:])
 
         # This is how the name is embedded in some instrument kernels
         if bf_key == 'FRAME' and 'INS' in tkdict:
@@ -318,65 +323,70 @@ def from_text(text, tkdict=None, *, commented=True, contin=''):
 
 
 def from_file(path, tkdict=None, *, contin=''):
-    """This routine parses the content of a text kernel, returning a dictionary of the
-    values found.
+    """
+    Parse the contents of a text kernel, returning a dict of the values found.
 
-    Input:
-        path        the path to a kernel file as a string or pathlib.Path.
-        tkdict      An optional starting dictionary. If provided, the new content is
-                    merged into the one provided; otherwise, a new dictionary is returned.
-        contin      optional sequence of characters indicating that a string is
-                    "continued", meaning that its value should be concatenated with the
-                    next string in the list. See the rules for continued strings here:
-                      https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
-                    If a text kernel uses multiple different continuation sequences (which
-                    is exceedingly unlikely), you can only specify one sequence here; use
-                    continued_value() to interpret the values of other continued strings.
-                    The default value is "+" for all metakernels.
+    Args:
+        path (str or Path): The path to a kernel file as a string or `pathlib.Path`.
+        tkdict (dict, optional): An optional starting dictionary. If provided, the new
+            content is merged into the one provided; otherwise, a new dictionary is
+            returned.
+        contin (str, optional): Optional sequence of characters indicating that a string
+            is "continued", meaning that its value should be concatenated with the
+            next string in the list. See the rules for continued strings here:
+                https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+            If a text kernel uses multiple different continuation sequences (which
+            is exceedingly unlikely), you can only specify one sequence here; use
+            continued_value() to interpret the values of other continued strings.
+            The default value is "+" for all metakernels.
 
-    Return:         A dictionary containing all the parameters in the given SPICE text
-                    kernel.
+    Returns:
+        dict: A dictionary containing all the parameters in the given string.
 
-    The returned dictionary is keyed by all the parameter names (on the left side of an
-    equal sign) in the text kernel, and each associated dictionary value is that found on
-    the right side. Values are Python ints, floats, strings, datetime objects, or lists of
-    one or more of these.
+        The returned dictionary is keyed by all the parameter names (on the left
+        side of an equal sign) in the text kernel, and each associated
+        dictionary value is that found on the right side. Values are Python
+        ints, floats, strings, datetime objects, or lists of one or more of
+        these.
 
-    For convenience, the returned dictionary adds additional, "hierarchical" keys that
-    provide alternative access to the same values. Hierarchical keys are substrings from
-    the original parameter name, which return a sub-dictionary keyed by part or all of the
-    remainder of that parameter name.
+        For convenience, the returned dictionary adds additional, "hierarchical"
+        keys that provide alternative access to the same values. Hierarchical
+        keys are substrings from the original parameter name, which return a
+        sub-dictionary keyed by part or all of the remainder of that parameter
+        name.
 
-    - Parameter names with a slash are split apart as if they represented components of a
-      file directory tree, so these are equivalent:
-            tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
+        - Parameter names with a slash are split apart as if they represented
+          components of a file directory tree, so these are equivalent:
+                tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
 
-    - When a body or frame ID is embedded inside a parameter name, it is extracted,
-      converted to integer, and used as a piece of the hierarchy, making these equivalent:
-            tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
-            tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
-      Leading and trailing underscores before and after the embedded numeric ID are
-      stripped from the hierarchical keys, as you can see in the examples above.
+        - When a body or frame ID is embedded inside a parameter name, it is extracted,
+          converted to integer, and used as a piece of the hierarchy, making these
+          equivalent:
+                tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
+                tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+          Leading and trailing underscores before and after the embedded numeric ID are
+          stripped from the hierarchical keys, as you can see in the examples above.
 
-    - When the name associated with a body or frame ID is known, that name can be used in
-      the place of the integer ID:
-            tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
-            tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
-            tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
+        - When the name associated with a body or frame ID is known, that name can be
+          used in the place of the integer ID:
+                tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
+                tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
+                tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
 
-    - If a frame is associated with a particular central body, the body's ID can also be
-      used in place of the frame's ID:
-            tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
-
-    Note that the "BODY" and "FRAME" dictionaries also have an additional entry keyed by
-    "ID", which returns the associated integer ID:
-            tkdict["FRAME"][623]["ID"] = 623
-            tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
-    This ensures that you can look up a body or frame by name and readily obtain its ID.
+        - If a frame is associated with a particular central body, the body's ID can also
+          be used in place of the frame's ID:
+                tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
+          Note that the "BODY" and "FRAME" dictionaries also have an additional entry
+          keyed by "ID", which returns the associated integer ID:
+                tkdict["FRAME"][623]["ID"] = 623
+                tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+          This ensures that you can look up a body or frame by name and readily obtain its
+          ID.
     """
 
     text = pathlib.Path(path).read_text(encoding='latin8')
     return from_text(text, tkdict=tkdict, commented=True, contin=contin)
+
 
 ##########################################################################################
 # Kernel dictionary management

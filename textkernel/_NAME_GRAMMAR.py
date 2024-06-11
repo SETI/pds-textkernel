@@ -47,7 +47,7 @@ INDEXED_NAME = (oneOf(['BODY', 'OBJECT', 'FRAME', 'TKFRAME', 'INS', 'CK'])
                 + Suppress(Optional(Literal('_')))
                 + GENERAL_NAME)
 INDEXED_NAME.set_name('INDEXED_NAME')
-INDEXED_NAME.set_parse_action(lambda s,l,t: tuple(t))
+INDEXED_NAME.set_parse_action(lambda s, loc, toks: tuple(toks))
 
 TKFRAME_SUFFIX = oneOf(['ANGLES', 'AXES', 'BORESIGHT', 'MATRIX', 'Q', 'RELATIVE', 'SPEC',
                         'UNITS'])
@@ -59,7 +59,7 @@ TKFRAME_NAME = (Literal('TKFRAME')
                 + Suppress(Literal('_'))
                 + TKFRAME_SUFFIX)
 TKFRAME_NAME.set_name('TKFRAME_NAME')
-TKFRAME_NAME.set_parse_action(lambda s,l,t: tuple(t))
+TKFRAME_NAME.set_parse_action(lambda s, loc, toks: tuple(toks))
 
 CK_NAME = (Literal('SCLK')
            + Suppress(Optional(Literal('_')))
@@ -67,11 +67,12 @@ CK_NAME = (Literal('SCLK')
                                 + Word(alphanums+'_-', min=1, max=1)))
            + Suppress(Literal('_')) + UNSIGNED_INT)
 CK_NAME.set_name('CK_NAME')
-CK_NAME.set_parse_action(lambda s,l,t: (t[0], -int(t[2]), t[1]))    # swap, change sign
+CK_NAME.set_parse_action(lambda s, loc, toks:
+                         (toks[0], -int(toks[2]), toks[1]))  # swap, change sign
 
 SECTION_NAME = Combine(CharsNotIn(EXCLUDED_CHARS + '/'))
 NESTED_NAME = OneOrMore(SECTION_NAME + Suppress(Literal('/'))) + SECTION_NAME
-NESTED_NAME.set_parse_action(lambda s,l,t: [list(t)])
+NESTED_NAME.set_parse_action(lambda s, loc, toks: [list(toks)])
 
 _NAME_GRAMMAR = ((INDEXED_NAME | TKFRAME_NAME | CK_NAME | NESTED_NAME | GENERAL_NAME)
                  + StringEnd())
