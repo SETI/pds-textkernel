@@ -1,57 +1,26 @@
 ##########################################################################################
 # textkernel/__init__.py
 ##########################################################################################
-"""PDS Ring-Moon Systems Node, SETI Institute
-TextKernel Library
-
-This is a set of routines for parsing SPICE text kernels. The simplest use case is as
-follows:
-    import textkernel
-    tkdict = textkernel.from_file('path/to/kernel/file')
-
-The returned dictionary is keyed by all the parameter names (on the left side of an equal
-sign) in the text kernel, and each associated dictionary value is that found on the right
-side. Values are Python ints, floats, strings, datetime objects, or lists of one or more
-of these.
-
-This module implements the complete syntax specification as discussed in the SPICE Kernel
-Required Reading document, "kernel.req".
-  https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html
-
-For convenience, the returned dictionary adds additional, "hierarchical" keys that provide
-alternative access to the same values. Hierarchical keys are substrings from the original
-parameter name, which return a sub-dictionary keyed by part or all of the remainder of
-that parameter name.
-
-- Parameter names with a slash are split apart as if they represented components of a file
-  directory tree, so these are equivalent:
-        tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
-
-- When a body or frame ID is embedded inside a parameter name, it is extracted, converted
-  to integer, and used as a piece of the hierarchy, making these equivalent:
-        tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
-        tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
-  Leading and trailing underscores before and after the embedded numeric ID are stripped
-  from the hierarchical keys, as you can see in the examples above. Note also that the
-  components of the parameter name are re-ordered in the second example, so that the
-  second key is always the numeric ID.
-
-- When the name associated with a body or frame ID is known, that name can be used in the
-  place of the integer ID:
-        tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
-        tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
-        tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
-
-- If a frame is uniquely or primarily associated with a particular central body, that
-  body's ID can also be used in place of the frame's ID:
-        tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
-
-Note that the "BODY" and "FRAME" dictionaries also have an additional entry keyed by "ID",
-which returns the associated integer ID:
-        tkdict["FRAME"][623]["ID"] = 623
-        tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
-This ensures that you can look up a body or frame by name and readily obtain its ID.
 """
+This is a set of routines for parsing SPICE text kernels. This module implements the
+complete syntax specification as discussed in the SPICE Kernel Required Reading document,
+"kernel.req": https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html
+
+The `textkernel` module provides two functions for reading text kernels:
+
+- `from_text`: Given a string representing the contents of a text kernel, return a
+  dictionary of the values found.
+- `from_file`: Given the path to a text kernel, read the contents and return a dictionary
+  of the values found.
+
+and two functions for manipulating text kernels:
+
+- `continued_value`: Interpret a list of strings as one or more continued strings.
+- `update_dict`: Merge the contents of two text kernel dictionaries, preserving nested
+  values.
+"""
+
+__all__ = ['from_text', 'from_file', 'continued_value', 'update_dict']
 
 import pathlib
 import re
@@ -79,17 +48,18 @@ def from_text(text, tkdict=None, *, commented=True, contin=''):
     Parse a string as the contents of a text kernel and return a dict of values found.
 
     Args:
-        text (str): The contents os a SPICE text kernel. It can be represented as a single
+        text (str): The contents as a SPICE text kernel. It can be represented as a single
             string with embedded newlines or as a list of strings.
         tkdict (dict, optional): An optional starting dictionary. If provided, the new
             content is merged into the one provided; otherwise, a new dictionary is
             returned.
         commented (bool, optional): True if the kernel text contains comments delimited
-            by " \\begintext" and "\\begindata".
+            by `\\\\begintext` and `\\\\begindata`.
         contin (str, optional): Optional sequence of characters indicating that a string
             is "continued", meaning that its value should be concatenated with the
             next string in the list. See the rules for continued strings here:
-                https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+            https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+
             If a text kernel uses multiple different continuation sequences (which
             is exceedingly unlikely), you can only specify one sequence here; use
             continued_value() to interpret the values of other continued strings.
@@ -112,29 +82,37 @@ def from_text(text, tkdict=None, *, commented=True, contin=''):
 
         - Parameter names with a slash are split apart as if they represented
           components of a file directory tree, so these are equivalent:
-                tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
+
+          - tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
 
         - When a body or frame ID is embedded inside a parameter name, it is extracted,
           converted to integer, and used as a piece of the hierarchy, making these
           equivalent:
-                tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
-                tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+
+          - tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
+          - tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+
           Leading and trailing underscores before and after the embedded numeric ID are
           stripped from the hierarchical keys, as you can see in the examples above.
 
         - When the name associated with a body or frame ID is known, that name can be
           used in the place of the integer ID:
-                tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
-                tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
-                tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
+
+          - tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
+          - tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
+          - tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
 
         - If a frame is associated with a particular central body, the body's ID can also
           be used in place of the frame's ID:
-                tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
-          Note that the "BODY" and "FRAME" dictionaries also have an additional entry
+
+          - tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
+
+        - Note that the "BODY" and "FRAME" dictionaries also have an additional entry
           keyed by "ID", which returns the associated integer ID:
-                tkdict["FRAME"][623]["ID"] = 623
-                tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+
+          - tkdict["FRAME"][623]["ID"] = 623
+          - tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+
           This ensures that you can look up a body or frame by name and readily obtain its
           ID.
     """
@@ -334,7 +312,8 @@ def from_file(path, tkdict=None, *, contin=''):
         contin (str, optional): Optional sequence of characters indicating that a string
             is "continued", meaning that its value should be concatenated with the
             next string in the list. See the rules for continued strings here:
-                https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+            https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+
             If a text kernel uses multiple different continuation sequences (which
             is exceedingly unlikely), you can only specify one sequence here; use
             continued_value() to interpret the values of other continued strings.
@@ -357,29 +336,37 @@ def from_file(path, tkdict=None, *, contin=''):
 
         - Parameter names with a slash are split apart as if they represented
           components of a file directory tree, so these are equivalent:
-                tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
+
+          - tkdict["DELTET/EB"] == tkdict["DELTET"]["EB"]
 
         - When a body or frame ID is embedded inside a parameter name, it is extracted,
           converted to integer, and used as a piece of the hierarchy, making these
           equivalent:
-                tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
-                tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+
+          - tkdict["BODY399_POLE_RA"] == tkdict["BODY"][399]["POLE_RA"]
+          - tkdict["SCLK01_MODULI_32"] == tkdict["SCLK"][-32]["01_MODULI"]
+
           Leading and trailing underscores before and after the embedded numeric ID are
           stripped from the hierarchical keys, as you can see in the examples above.
 
         - When the name associated with a body or frame ID is known, that name can be
           used in the place of the integer ID:
-                tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
-                tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
-                tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
+
+          - tkdict["BODY"][399] == tkdict["BODY"]["EARTH"]
+          - tkdict["FRAME"][10013] == tkdict["FRAME"]["IAU_EARTH"]
+          - tkdict["SCLK"][-32] == tkdict["SCLK"]["VOYAGER 2"]
 
         - If a frame is associated with a particular central body, the body's ID can also
           be used in place of the frame's ID:
-                tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
-          Note that the "BODY" and "FRAME" dictionaries also have an additional entry
+
+          - tkdict["FRAME"][399] == tkdict["FRAME"]["IAU_EARTH"]
+
+        - Note that the "BODY" and "FRAME" dictionaries also have an additional entry
           keyed by "ID", which returns the associated integer ID:
-                tkdict["FRAME"][623]["ID"] = 623
-                tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+
+          - tkdict["FRAME"][623]["ID"] = 623
+          - tkdict["FRAME"]["IAU_SUTTUNGR"]["ID"] = 623
+
           This ensures that you can look up a body or frame by name and readily obtain its
           ID.
     """
@@ -398,18 +385,20 @@ def continued_value(value, contin='+'):
     Use this function if you did not specify the string's continuation sequence when you
     created the dictionary.
 
-    Input:
-        value       a value from a text kernel.
-        contin      sequence of characters indicating that a string is "continued",
-                    meaning that its value should be concatenated with the next string in
-                    the list. See the rules for continued strings here:
-                        https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
+    Args:
+        value (Any): A value from a text kernel.
+        contin (str, optional): A sequence of characters indicating that a string is
+            "continued", meaning that its value should be concatenated with the next
+            string in the list. See the rules for continued strings here:
+            https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Additional%20Text%20Kernel%20Syntax%20Rules
 
-    Return:         the same value after the continuation sequence has been applied. If
-                    the list now contains only a single value, that string is returned
-                    instead of a list containing the string.
+    Returns:
+        Any: The same value after the continuation sequence has been applied.
 
-    If any other type of value is given as input, that value is returned as is.
+        If the list now contains only a single value, that string is returned
+        instead of a list containing the string.
+
+        If any other type of value is given as input, that value is returned as is.
     """
 
     if not contin:
@@ -447,20 +436,19 @@ def update_dict(tkdict, newdict):
     Values in the new dictionary take precedence.
 
     The returned dictionary is the same as what one would get by reading the first text
-    kernel and then using its return value as the "tkdict" input when reading the second
+    kernel and then using its return value as the `tkdict` input when reading the second
     text kernel.
 
-    Input:
-        tkdict      a text kernel dictionary.
-        newdict     a second text kernel dictionary.
+    Args:
+        tkdict (dict): A text kernel dictionary.
+        newdict (dict): A second text kernel dictionary.
 
-    Return          the input tkdict, updated with the contents of the second dictionary.
+    Returns:
+        dict: The input `tkdict`, updated with the contents of `newdict`.
     """
 
     def alt_dict_keys(d):
-        """A dictionary that maps each dictionary key to its alternative keys including
-        itself.
-        """
+        """Create a dict that maps each key to its alt keys including itself."""
 
         alt_keys = {}
         keys_for_dict_id = {}
