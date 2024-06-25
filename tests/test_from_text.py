@@ -1,5 +1,5 @@
 ##########################################################################################
-# textkernel/tests/test_from_text.py
+# tests/test_from_text.py
 ##########################################################################################
 
 import unittest
@@ -215,13 +215,3 @@ class Test_from_text(unittest.TestCase):
         self.assertEqual(d['FRAME_-32200_NAME'], 'VG2_CONE_CLOCK')
 
         self.assertRaises(ParseException, from_text, text, commented=False)
-
-
-#########################################################################################
-# Perform unit testing if executed from the command line
-#########################################################################################
-
-if __name__ == '__main__':
-    unittest.main()
-
-#########################################################################################

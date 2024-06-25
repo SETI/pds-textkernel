@@ -1,5 +1,5 @@
 ##########################################################################################
-# textkernel/tests_name_grammar.py
+# textkerneltests_name_grammar.py
 ##########################################################################################
 
 import unittest
@@ -30,13 +30,3 @@ class Test_NAME_GRAMMAR(unittest.TestCase):
         self.assertEqual(func('TKFRAME_-82008_SPEC')[0],    ('TKFRAME', -82008, 'SPEC'))
         self.assertEqual(func('TKFRAME_DSS-14_TOPO_Q')[0],  ('TKFRAME', 'DSS-14_TOPO',
                                                              'Q'))
-
-
-##########################################################################################
-# Perform unit testing if executed from the command line
-##########################################################################################
-
-if __name__ == '__main__':
-    unittest.main()
-
-##########################################################################################

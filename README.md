@@ -36,22 +36,25 @@ Required Reading document, "kernel.req":
 The `textkernel` module is available via the `rms-textkernel` package on PyPI and can be
 installed with:
 
-    pip install rms-textkernel
+```sh
+pip install rms-textkernel
+```
 
 # Getting Started
 
 The `textkernel` module provides two functions for reading text kernels:
 
-- `from_text`: Given a string representing the contents of a text kernel, return a
-  dictionary of the values found.
-- `from_file`: Given the path to a text kernel, read the contents and return a dictionary
-  of the values found.
+- [`from_text`](https://rms-textkernel.readthedocs.io/en/latest/module.html#textkernel.from_text):
+  Given a string representing the contents of a text kernel, return a dictionary of the values found.
+- [`from_file`](https://rms-textkernel.readthedocs.io/en/latest/module.html#textkernel.from_file):
+  Given the path to a text kernel, read the contents and return a dictionary of the values found.
 
 and two functions for manipulating text kernels:
 
-- `continued_value`: Interpret a list of strings as one or more continued strings.
-- `update_dict`: Merge the contents of two text kernel dictionaries, preserving nested
-  values.
+- [`continued_value`](https://rms-textkernel.readthedocs.io/en/latest/module.html#textkernel.continued_value):
+  Interpret a list of strings as one or more continued strings.
+- [`update_dict`](https://rms-textkernel.readthedocs.io/en/latest/module.html#textkernel.update_dict):
+  Merge the contents of two text kernel dictionaries, preserving nested values.
 
 Details of each function are available in the [module documentation](https://rms-textkernel.readthedocs.io/en/latest/module.html).
 
