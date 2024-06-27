@@ -1,7 +1,8 @@
 ##########################################################################################
 # textkernel/__init__.py
 ##########################################################################################
-"""
+"""PDS Ring-Moon Systems Node, SETI Institute
+
 This is a set of routines for parsing SPICE text kernels. This module implements the
 complete syntax specification as discussed in the SPICE Kernel Required Reading document,
 "kernel.req": https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html
